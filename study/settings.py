@@ -134,6 +134,6 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "venv\Lib\site-packages\xadmin\static\xadmin"),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR)
+]

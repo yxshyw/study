@@ -20,14 +20,20 @@ class Course(models.Model):
         verbose_name = '课程'
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return self.name
+
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, verbose_name='课程', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, verbose_name='课程', on_delete=models.PROTECT)
     name = models.CharField(max_length=100, verbose_name='章节名')
     add_time = models.DateTimeField(default=datetime.now, verbose_name='添加时间')
 
     class Meta:
         verbose_name = '章节'
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
 
 class Video(models.Model):
     lesson = models.ForeignKey(Lesson, verbose_name='章节', on_delete=models.CASCADE)
@@ -47,3 +53,4 @@ class CourseResource(models.Model):
     class Meta:
         verbose_name = '课程资源'
         verbose_name_plural = verbose_name
+
