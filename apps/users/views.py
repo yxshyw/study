@@ -1,11 +1,14 @@
 import json
+import re
 
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from django.views.generic.base import View
 
 from .models import UserProfile
+from .forms import LoginFrom
 
 # Create your views here.
 class CustomBackend(ModelBackend):
@@ -15,23 +18,32 @@ class CustomBackend(ModelBackend):
             if user.check_password(password):
                 return user
         except Exception as e:
-            print(e)
+            print('异常信息:', e)
             return None
 
-def user_login(request):
-    if request.method == 'POST':
+
+class LoginView(View):
+    def get(self, request):
+        print(request.COOKIES.get('sessionid'))
+        print(request.session)
+        print(type(request.session))
+
+    def post(self, request):
+        print(request.user)
         data = json.loads(request.body)
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
-        user = authenticate(username=data['username'], password=data['password'])
-        print(user)
-        if user is not None:
-            login(request, user)
-            return HttpResponse('登录成功')
+        login_form = LoginFrom(data)
+        if login_form.is_valid():
+            user = authenticate(username=data['username'], password=data['password'])
+            # print(user)
+            if user is not None:
+                login(request, user)
+                return HttpResponse('登录成功')
+            else:
+                return HttpResponse('登录名或登录密码不正确')
         else:
-            return HttpResponse('登录名或登录密码不正确')
-    else:
-        return HttpResponse('你的请求方式不允许')
+            for key, errors in login_form.errors.items():
+                print(key, ':', re.split('[<li>|</li>]', str(errors))[10])
+                return HttpResponse('请检查你输入的字符是否有误，用户名和密码为必填项，密码最大长度为20个字符')
 
 
 class UsersView:
