@@ -1,14 +1,17 @@
 import json
 import re
+from datetime import datetime
 
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.views.generic.base import View
+from django.contrib.sessions.models import Session
 
 from .models import UserProfile
-from .forms import LoginFrom
+from .forms import LoginFrom, RegisterForm
 
 # Create your views here.
 class CustomBackend(ModelBackend):
@@ -23,11 +26,6 @@ class CustomBackend(ModelBackend):
 
 
 class LoginView(View):
-    def get(self, request):
-        print(request.COOKIES.get('sessionid'))
-        print(request.session)
-        print(type(request.session))
-
     def post(self, request):
         print(request.user)
         data = json.loads(request.body)
@@ -41,10 +39,29 @@ class LoginView(View):
             else:
                 return HttpResponse('登录名或登录密码不正确')
         else:
+            print(login_form.errors.as_data())
             for key, errors in login_form.errors.items():
-                print(key, ':', re.split('[<li>|</li>]', str(errors))[10])
-                return HttpResponse('请检查你输入的字符是否有误，用户名和密码为必填项，密码最大长度为20个字符')
+                # print(key, ':', re.split('[<li>|</li>]', str(errors))[10])
+                return HttpResponse(login_form.errors.as_text())
 
+
+class RegisterView(View):
+    def get(self, request):
+        register_form = RegisterForm()
+        return render(request, 'register.html', {'register_form': register_form})
+
+    def post(self, request):
+        data = json.loads(request.body)
+        register_form = RegisterForm(data)
+        if register_form.is_valid():
+            UserProfile.objects.create(
+                email=data['email'],
+                username=data['email'],
+                password=make_password(data['password'])
+            )
+            return HttpResponse('yes')
+        else:
+            return HttpResponse('no')
 
 class UsersView:
     @classmethod
