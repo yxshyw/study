@@ -10,8 +10,9 @@ from django.db.models import Q
 from django.views.generic.base import View
 from django.contrib.sessions.models import Session
 
-from .models import UserProfile
+from .models import UserProfile, EmailVerifyRecord
 from .forms import LoginFrom, RegisterForm
+from utils.email_send import send_register_email
 
 # Create your views here.
 class CustomBackend(ModelBackend):
@@ -34,10 +35,13 @@ class LoginView(View):
             user = authenticate(username=data['username'], password=data['password'])
             # print(user)
             if user is not None:
-                login(request, user)
-                return HttpResponse('登录成功')
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponse('登录成功')
+                else:
+                    return HttpResponse('该用户未激活')
             else:
-                return HttpResponse('登录名或登录密码不正确')
+                return HttpResponse('登录名或登录密码错误')
         else:
             print(login_form.errors.as_data())
             for key, errors in login_form.errors.items():
@@ -54,14 +58,31 @@ class RegisterView(View):
         data = json.loads(request.body)
         register_form = RegisterForm(data)
         if register_form.is_valid():
-            UserProfile.objects.create(
-                email=data['email'],
-                username=data['email'],
-                password=make_password(data['password'])
-            )
+            try:
+                UserProfile.objects.create(
+                    email=data['email'],
+                    username=data['email'],
+                    password=make_password(data['password']),
+                    is_active=False
+                )
+                send_register_email(data['email'])
+            except Exception as e:
+                print('异常信息:', e)
             return HttpResponse('yes')
         else:
             return HttpResponse('no')
+
+
+class ActiveView(View):
+    def get(self, request, active_code):
+        all_records = EmailVerifyRecord.objects.filter(code=active_code)
+        for record in all_records:
+            email = record.email
+            user = UserProfile.objects.get(email=email)
+            user.is_active = True
+            user.save()
+        return HttpResponse('yes')
+
 
 class UsersView:
     @classmethod
