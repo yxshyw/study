@@ -13,15 +13,24 @@ def send_register_email(email, send_type='register'):
     code = ''
     for i in range(16):
         code += s[random.randint(0, len(s)-1)]
-    EmailVerifyRecord.objects.create(
-        code=code,
-        email=email,
-        send_type=send_type
-    )
     if send_type == 'register':
         email_title = '注册标题'
-        email_body = '注册内容：http://127.0.0.1:8000/users/active/{0}'.format(code)
+        email_body = '注册内容：http://127.0.0.1:8000/users/active/{0}/'.format(code)
         send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
         if send_status:
-            pass
+            EmailVerifyRecord.objects.create(
+                code=code,
+                email=email,
+                send_type=send_type
+            )
+    elif send_type == 'forget':
+        email_title = '重置密码'
+        email_body = '注册内容：http://127.0.0.1:8000/users/reset/{0}/'.format(code)
+        send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
+        if send_status:
+            EmailVerifyRecord.objects.create(
+                code=code,
+                email=email,
+                send_type=send_type
+            )
 

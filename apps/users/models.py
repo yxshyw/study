@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -27,6 +27,7 @@ class EmailVerifyRecord(models.Model):
     email = models.EmailField(max_length=50, verbose_name='邮箱')
     send_type = models.CharField(choices=(('register', '注册'), ('forget', '找回密码')), default='register', max_length=10, verbose_name='验证码类型')
     send_time = models.DateTimeField(default=datetime.now, verbose_name='发送时间')
+    expire_time = models.DateTimeField(default=datetime.now()+timedelta(minutes=5), verbose_name='过期时间')
 
     class Meta:
         verbose_name = '邮箱验证码'

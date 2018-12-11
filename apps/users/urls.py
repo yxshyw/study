@@ -21,5 +21,7 @@ urlpatterns = [
     path('', views.LoginView.as_view(), name='login'),
     path('test/', views.UsersView.login(), name='test'),
     path('register/', views.RegisterView.as_view(), name='register'),
-    re_path(r'^active/(?P<active_code>\w+)/$', views.ActiveView.as_view(), name='active')
+    re_path(r'^active/(?P<active_code>\w+)/$', views.ActiveView.as_view(), name='active'),
+    path('forget/', views.ForgetPwdView.as_view(), name='forget_pwd'),
+    re_path(r'^reset/(?P<reset_code>\w+)/$', views.ResetView.as_view(), name='reset_pwd'),
 ]

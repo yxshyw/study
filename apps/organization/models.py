@@ -14,9 +14,12 @@ class CityDict(models.Model):
         verbose_name = '城市'
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return self.name
+
 
 class CourseOrg(models.Model):
-    city = models.ForeignKey(CityDict, on_delete=models.CASCADE, verbose_name='所在城市')
+    city = models.ForeignKey(CityDict, on_delete=models.PROTECT, verbose_name='所在城市')
     name = models.CharField(max_length=50, verbose_name='机构名称')
     desc = models.TextField(verbose_name='机构描述')
     click_nums = models.IntegerField(default=0, verbose_name='点击数')
@@ -28,6 +31,9 @@ class CourseOrg(models.Model):
     class Meta:
         verbose_name = '课程机构'
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
 
 
 class Teacher(models.Model):

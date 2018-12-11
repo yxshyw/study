@@ -11,7 +11,7 @@ from django.views.generic.base import View
 from django.contrib.sessions.models import Session
 
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginFrom, RegisterForm
+from .forms import LoginFrom, RegisterForm, LoginFromSet
 from utils.email_send import send_register_email
 
 # Create your views here.
@@ -28,8 +28,8 @@ class CustomBackend(ModelBackend):
 
 class LoginView(View):
     def post(self, request):
-        print(request.user)
-        data = json.loads(request.body)
+        print(self.request.user)
+        data = json.loads(self.request.body)
         login_form = LoginFrom(data)
         if login_form.is_valid():
             user = authenticate(username=data['username'], password=data['password'])
@@ -43,6 +43,7 @@ class LoginView(View):
             else:
                 return HttpResponse('登录名或登录密码错误')
         else:
+            print(login_form.errors)
             print(login_form.errors.as_data())
             for key, errors in login_form.errors.items():
                 # print(key, ':', re.split('[<li>|</li>]', str(errors))[10])
@@ -55,8 +56,10 @@ class RegisterView(View):
         return render(request, 'register.html', {'register_form': register_form})
 
     def post(self, request):
-        data = json.loads(request.body)
+        data = json.loads(self.request.body)
         register_form = RegisterForm(data)
+        if UserProfile.objects.filter(email=data['email']):
+            return HttpResponse('email 已存在')
         if register_form.is_valid():
             try:
                 UserProfile.objects.create(
@@ -76,12 +79,40 @@ class RegisterView(View):
 class ActiveView(View):
     def get(self, request, active_code):
         all_records = EmailVerifyRecord.objects.filter(code=active_code)
-        for record in all_records:
-            email = record.email
-            user = UserProfile.objects.get(email=email)
-            user.is_active = True
-            user.save()
-        return HttpResponse('yes')
+        if all_records:
+            for record in all_records:
+                email = record.email
+                user = UserProfile.objects.get(email=email)
+                user.is_active = True
+                user.save()
+            return HttpResponse('激活成功')
+        else:
+            return HttpResponse('链接有误')
+
+
+class ResetView(View):
+    def get(self, request, reset_code):
+        all_records = EmailVerifyRecord.objects.filter(code=reset_code)
+        if all_records:
+            for record in all_records:
+                email = record.email
+                user = UserProfile.objects.get(email=email)
+                user.set_password('123456')
+                user.save()
+            return HttpResponse('重置密码成功')
+        else:
+            return HttpResponse('链接有误')
+
+
+class ForgetPwdView(View):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        data = json.loads(request.body)
+        email = data['email']
+        send_register_email(email, 'forget')
+        return HttpResponse('发送成功')
 
 
 class UsersView:

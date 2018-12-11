@@ -102,7 +102,8 @@ DATABASES = {
         'NAME': 'study',
         'HOST': '127.0.0.1',
         'USER': 'root',
-        'PASSWORD': '123456'
+        'PASSWORD': '123456',
+        'CHARSET': 'utf8mb4'
     }
 }
 
@@ -147,3 +148,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

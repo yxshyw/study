@@ -9,5 +9,5 @@ from .models import EmailVerifyRecord
 @admin.register(EmailVerifyRecord)
 class EmailVerifyRecordAdmin(admin.ModelAdmin):
     list_display = ('email', 'code', 'send_type', 'send_time')
-    list_filter = ('email', 'code', 'send_type', 'send_time')
+    list_filter = ('email', 'code', 'send_type')
     search_fields = ('email', 'code', 'send_type', 'send_time')
