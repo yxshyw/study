@@ -12,8 +12,8 @@ class CourseOrgAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.site_header = 'header'
+admin.site.site_header = '也许是意外'
 admin.site.name = 'name'
 admin.site.site_title = 'title'
-admin.site.site_url = 'url'
-admin.site.index_title = 'index_title'
+admin.site.site_url = 'kk'
+admin.site.index_title = '意外'
